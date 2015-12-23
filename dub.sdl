@@ -1,0 +1,7 @@
+name "dcrc"
+description "A generic CRC library implementation."
+copyright "Copyright © 2015, Gianni Pisetta"
+license "MIT"
+authors "Gianni Pisetta"
+targetType "library"
+
