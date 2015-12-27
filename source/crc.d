@@ -27,9 +27,16 @@ template CRC(alias P,alias I,alias O,Shift S,Endian E) {
     enum checkValidTypes = is( PT == IT )  && is( IT == OT ) && 
       ( is( PT == ulong ) || is( PT == uint ) || is( PT == ushort ) || is( PT == ubyte ) ) ;
   }
-  // check that P, I and O are of the same type
-  static assert( checkValidTypes!( typeof( P ), typeof( I ), typeof( O ) ) );
 
+  unittest {
+    static assert( checkValidTypes!(uint,uint,uint) );
+    static assert( ! checkValidTypes!(uint,ushort,ubyte) );
+  }
+
+  // check that P, I and O are of the same type
+  static assert( checkValidTypes!( typeof( P ), typeof( I ), typeof( O ) ), "CRC template arguments P, I and O must be of the same unsigned type." );
+
+  // alias definition of the type
   alias typeof( P ) CRCType;
 
   alias P Polynomial;
@@ -166,6 +173,20 @@ template CRC(alias P,alias I,alias O,Shift S,Endian E) {
         return crc;
       }
   }
+
+  unittest {
+    ubyte[] data = [ 0xA0, 0xA1, 0xA2 ];
+
+    CRC hf;
+
+    hf.put( data );
+    auto h = hf.peek;
+
+    hf.start();
+    hf.put( data );
+
+    assert( equal( hf.finish()[], h[] ) );
+  }
 }
 
 // OOP implementation of CRC struct
@@ -179,8 +200,17 @@ template CRCDigest(C) if ( is( C == CRC!(P,I,O,S,E), alias P, alias I, alias O, 
 }
 
 // This function calculates a CRC from it's arguments, using P, I, O, S and E parameters. Supports CTFE
-auto crcOf(alias P,alias I,alias O,Shift S,Endian E,T...)( T data ) {
-  return digest!(CRC!(P,I,O,S,E))( data );
+template crcOf(alias P,alias I,alias O,Shift S,Endian E) {
+  auto crcOf(T...)( T data ) {
+    return digest!(CRC!(P,I,O,S,E))( data );
+  }
+
+  unittest {
+    enum fh = crcOf( "The quick brown fox jumps over the lazy dog" );
+    auto h = crcOf( "The quick brown fox jumps over the lazy dog" );
+
+    assert( equal( h[], fh[] ) );
+  }
 }
 
 // This function calculates a CRC from it's arguments, using the CRC specified in C.
