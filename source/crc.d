@@ -275,7 +275,12 @@ unittest {
 
   // CRC result check
   static assert( equal( crc32Of( "The quick brown fox jumps over the lazy dog" )[],
-    [ 0x39, 0xA3, 0x4F, 0x41 ] ) );
-  
+    [ 0x39, 0xA3, 0x4F, 0x41 ] ) );  
 }
+
+alias CRC!(0xD800000000000000U,0,0,Shift.Right,Endian.littleEndian) CRC64;
+
+alias CRCDigest!CRC64 CRC64Digest;
+
+alias crcOf!CRC64 crc64Of;
 
